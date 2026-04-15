@@ -1,26 +1,100 @@
-@import "tailwindcss";
+/* app/globals.css */
+/* This file sets the baseline styles for the entire application.
+   Tailwind's base, components, and utilities layers are imported here.
+   We also define CSS custom properties (variables) and reset default
+   browser styles so everything looks consistent across browsers. */
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Base resets and defaults applied to every element */
+@layer base {
+  /* Every element uses border-box sizing -- padding and border are
+     included in the element's total width, not added on top of it */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Set the root background to our darkest color and default text to white */
+  html,
+  body {
+    background-color: #0A0A0A;
+    color: #FFFFFF;
+    font-family: "Inter", sans-serif;
+    /* Prevent horizontal scroll on the page */
+    overflow-x: hidden;
+    /* Make text rendering sharper on all screens */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Custom scrollbar so the browser scrollbar matches our dark theme */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0A0A0A;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #222222;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #00FF87;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Reusable component classes we can use with className="..." */
+@layer components {
+  /* The standard dark card used throughout the app */
+  .card {
+    @apply bg-brand-card border border-brand-border rounded-lg;
+  }
+
+  /* The neon green primary button */
+  .btn-primary {
+    @apply bg-brand-green text-brand-dark font-bold py-3 px-6 rounded-lg
+           hover:bg-brand-green-dim transition-colors duration-200 cursor-pointer
+           uppercase tracking-wider text-sm;
+  }
+
+  /* The outlined secondary button */
+  .btn-secondary {
+    @apply bg-transparent border border-brand-green text-brand-green font-bold
+           py-3 px-6 rounded-lg hover:bg-brand-green hover:text-brand-dark
+           transition-colors duration-200 cursor-pointer uppercase tracking-wider text-sm;
+  }
+
+  /* Display font class for big bold headings like match titles */
+  .font-display {
+    @apply font-display uppercase tracking-wide;
+  }
+
+  /* Muted label text used for things like "POOL SIZE", "ENTRY", etc. */
+  .label {
+    @apply text-brand-muted text-xs uppercase tracking-widest font-medium;
+  }
+
+  /* The green left border accent used on match cards */
+  .card-accent-green {
+    @apply border-l-4 border-l-brand-green;
+  }
+
+  /* The orange left border accent used on closing soon cards */
+  .card-accent-orange {
+    @apply border-l-4 border-l-brand-orange;
+  }
+
+  /* The red left border accent used on loss cards */
+  .card-accent-red {
+    @apply border-l-4 border-l-brand-red;
+  }
 }
