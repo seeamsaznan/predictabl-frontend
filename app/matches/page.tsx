@@ -156,16 +156,15 @@ export default function MatchesPage() {
       </div>
 
       {/* Sport dropdown */}
-      <div
-        ref={dropdownRef}
-        style={{
-          position: "relative",
-          marginBottom: "16px",
-          display: "inline-block",
-          width: "100%",
-          maxWidth: "280px",
-        }}
-      >
+        <div
+      ref={dropdownRef}
+      style={{
+        position: "relative",
+        marginBottom: "16px",
+        width: "100%",
+        maxWidth: "280px",
+      }}
+    >
         {/* Dropdown trigger button */}
         <button
           onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -303,6 +302,8 @@ export default function MatchesPage() {
           gap: "0",
           marginBottom: "24px",
           borderBottom: "1px solid #222222",
+          maxWidth: "100%",
+          overflowX: "auto",
         }}
       >
         {statusFilters.map((filter) => {

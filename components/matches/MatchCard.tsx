@@ -2,7 +2,7 @@
 // This is the reusable match card component used on the Matches page.
 // It displays all the key information about a single match:
 // league, teams, odds, pool size, entry fee, status, and a predict button.
-// It receives a match object as a prop and renders it consistently.
+// On mobile, the predict button stacks below the pool/entry info.
 
 import Link from "next/link";
 import { Match } from "@/lib/mockData";
@@ -11,7 +11,6 @@ type MatchCardProps = {
   match: Match;
 };
 
-// Returns the correct color for each match status
 function getStatusColor(status: Match["status"]): string {
   switch (status) {
     case "live": return "#00FF87";
@@ -22,7 +21,6 @@ function getStatusColor(status: Match["status"]): string {
   }
 }
 
-// Returns the correct label for each match status
 function getStatusLabel(status: Match["status"]): string {
   switch (status) {
     case "live": return "LIVE";
@@ -33,7 +31,6 @@ function getStatusLabel(status: Match["status"]): string {
   }
 }
 
-// Returns the correct left border color for each match status
 function getBorderColor(status: Match["status"]): string {
   switch (status) {
     case "live": return "#00FF87";
@@ -44,8 +41,6 @@ function getBorderColor(status: Match["status"]): string {
   }
 }
 
-// Formats odds number with + or - prefix
-// for example 130 becomes "+130" and -150 stays "-150"
 function formatOdds(odds: number): string {
   return odds > 0 ? `+${odds}` : `${odds}`;
 }
@@ -64,6 +59,50 @@ export default function MatchCard({ match }: MatchCardProps) {
         opacity: isEnded ? 0.6 : 1,
       }}
     >
+      {/* Responsive styles for the bottom row */}
+      <style>{`
+        .match-card-bottom {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+        }
+        .match-card-info {
+          display: flex;
+          align-items: center;
+          gap: 24px;
+        }
+        .match-card-cta {
+          background-color: transparent;
+          border: 1px solid #00FF87;
+          color: #00FF87;
+          font-weight: 700;
+          font-size: 13px;
+          padding: 10px 20px;
+          border-radius: 8px;
+          text-decoration: none;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          font-family: "Barlow Condensed", sans-serif;
+          white-space: nowrap;
+          text-align: center;
+          display: inline-block;
+        }
+        @media (max-width: 640px) {
+          .match-card-bottom {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 16px;
+          }
+          .match-card-info {
+            justify-content: space-between;
+          }
+          .match-card-cta {
+            width: 100%;
+          }
+        }
+      `}</style>
+
       {/* Top row -- league and status badge */}
       <div
         style={{
@@ -134,92 +173,134 @@ export default function MatchCard({ match }: MatchCardProps) {
           backgroundColor: "#1A1A1A",
           borderRadius: "8px",
           padding: "12px 16px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
           marginBottom: "16px",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ color: "#AAAAAA", fontSize: "12px", textTransform: "uppercase" }}>
-            {match.homeTeam}
-          </span>
-          <span
-            style={{
-              color: match.homeOdds < 0 ? "#FFFFFF" : "#00FF87",
-              fontSize: "16px",
-              fontWeight: "700",
-              fontFamily: "Barlow Condensed, sans-serif",
-            }}
-          >
-            {formatOdds(match.homeOdds)}
-          </span>
-        </div>
-        <span style={{ color: "#444444", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+        <p
+          style={{
+            color: "#444444",
+            fontSize: "10px",
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
+            textAlign: "center",
+            marginBottom: "8px",
+          }}
+        >
           Money Lines
-        </span>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span
+        </p>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "12px",
+          }}
+        >
+          <div
             style={{
-              color: match.awayOdds > 0 ? "#00FF87" : "#FFFFFF",
-              fontSize: "16px",
-              fontWeight: "700",
-              fontFamily: "Barlow Condensed, sans-serif",
+              display: "flex",
+              alignItems: "center",
+              flex: 1,
+              minWidth: 0,
+              justifyContent: "space-between",
+              gap: "8px",
             }}
           >
-            {formatOdds(match.awayOdds)}
-          </span>
-          <span style={{ color: "#AAAAAA", fontSize: "12px", textTransform: "uppercase" }}>
-            {match.awayTeam}
-          </span>
+            <span
+              style={{
+                color: "#AAAAAA",
+                fontSize: "12px",
+                textTransform: "uppercase",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {match.homeTeam}
+            </span>
+            <span
+              style={{
+                color: match.homeOdds < 0 ? "#FFFFFF" : "#00FF87",
+                fontSize: "16px",
+                fontWeight: "700",
+                fontFamily: "Barlow Condensed, sans-serif",
+                flexShrink: 0,
+              }}
+            >
+              {formatOdds(match.homeOdds)}
+            </span>
+          </div>
+
+          <div
+            style={{
+              width: "1px",
+              height: "24px",
+              backgroundColor: "#333333",
+              flexShrink: 0,
+            }}
+          />
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              flex: 1,
+              minWidth: 0,
+              justifyContent: "space-between",
+              gap: "8px",
+            }}
+          >
+            <span
+              style={{
+                color: match.awayOdds > 0 ? "#00FF87" : "#FFFFFF",
+                fontSize: "16px",
+                fontWeight: "700",
+                fontFamily: "Barlow Condensed, sans-serif",
+                flexShrink: 0,
+              }}
+            >
+              {formatOdds(match.awayOdds)}
+            </span>
+            <span
+              style={{
+                color: "#AAAAAA",
+                fontSize: "12px",
+                textTransform: "uppercase",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {match.awayTeam}
+            </span>
+          </div>
         </div>
       </div>
 
       {/* Bottom row -- pool size, entry fee, predict button */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "12px",
-        }}
-      >
-        <div>
-          <p style={{ color: "#666666", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "2px" }}>
-            Pool Size
-          </p>
-          <p style={{ color: "#00FF87", fontSize: "16px", fontWeight: "700", fontFamily: "Barlow Condensed, sans-serif" }}>
-            {match.poolSize.toLocaleString()} TKNS
-          </p>
-        </div>
-        <div>
-          <p style={{ color: "#666666", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "2px" }}>
-            Entry
-          </p>
-          <p style={{ color: "#AAAAAA", fontSize: "14px", fontWeight: "600" }}>
-            {match.entryFee} TKNS
-          </p>
+      <div className="match-card-bottom">
+        <div className="match-card-info">
+          <div>
+            <p style={{ color: "#666666", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "2px" }}>
+              Pool Size
+            </p>
+            <p style={{ color: "#00FF87", fontSize: "16px", fontWeight: "700", fontFamily: "Barlow Condensed, sans-serif" }}>
+              {match.poolSize.toLocaleString()} TKNS
+            </p>
+          </div>
+          <div>
+            <p style={{ color: "#666666", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "2px" }}>
+              Entry
+            </p>
+            <p style={{ color: "#AAAAAA", fontSize: "14px", fontWeight: "600" }}>
+              {match.entryFee} TKNS
+            </p>
+          </div>
         </div>
 
-        {/* Only show predict button if match is not ended */}
         {!isEnded ? (
-          <Link
-            href={`/predict?match=${match.id}`}
-            style={{
-              backgroundColor: "transparent",
-              border: "1px solid #00FF87",
-              color: "#00FF87",
-              fontWeight: "700",
-              fontSize: "13px",
-              padding: "10px 20px",
-              borderRadius: "8px",
-              textDecoration: "none",
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              fontFamily: "Barlow Condensed, sans-serif",
-              whiteSpace: "nowrap",
-            }}
-          >
+          <Link href={`/predict?match=${match.id}`} className="match-card-cta">
             PREDICT SCORE →
           </Link>
         ) : (

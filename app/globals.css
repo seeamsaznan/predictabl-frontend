@@ -31,6 +31,7 @@ html, body {
   background-color: #0A0A0A;
   color: #FFFFFF;
   font-family: "Inter", sans-serif;
+  max-width: 100vw;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -42,7 +43,6 @@ html, body {
 ::-webkit-scrollbar-thumb:hover { background: #00FF87; }
 
 /* Responsive utilities
-   These classes control how the layout adapts to different screen sizes.
    We use three breakpoints:
    - Mobile: up to 768px
    - Tablet: 768px to 1024px  
@@ -53,9 +53,9 @@ html, body {
   .desktop-sidebar {
     display: none !important;
   }
-
   .main-content-area {
     margin-left: 0 !important;
+    padding-bottom: 80px !important;
   }
 }
 
@@ -68,11 +68,6 @@ html, body {
   .mobile-bottom-nav {
     display: flex;
   }
-
-  /* Add padding at the bottom so content doesnt hide behind the nav */
-  .main-content-area {
-    padding-bottom: 80px !important;
-  }
 }
 
 /* Responsive grid helpers */
@@ -80,8 +75,35 @@ html, body {
   .grid-2-col {
     grid-template-columns: 1fr !important;
   }
-
   .grid-4-col {
     grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* Force main content to respect container width */
+main {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+main * {
+  box-sizing: border-box;
+}
+
+/* Ensure grid children never overflow their cells */
+main [style*="display: grid"] {
+  min-width: 0;
+}
+
+main [style*="display: grid"] > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Mobile -- reduce main padding so cards have more breathing room */
+@media (max-width: 1024px) {
+  main {
+    padding: 12px !important;
   }
 }
