@@ -310,121 +310,132 @@ function PredictContent() {
           </div>
 
           {/* MOBILE ONLY -- Lock Prediction */}
-          <div
-            className="match-lock-wrapper-mobile"
-            style={{
-              backgroundColor: "#111111",
-              border: "1px solid #222222",
-              borderRadius: "12px",
-              padding: "24px",
-              marginBottom: "16px",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: "20px",
-              }}
-            >
-              <p
-                style={{
-                  color: "#FFFFFF",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.1em",
-                }}
-              >
-                Lock Prediction
-              </p>
-              <span
-                style={{
-                  backgroundColor: "rgba(0,255,135,0.1)",
-                  color: "#00FF87",
-                  fontSize: "11px",
-                  fontWeight: "700",
-                  padding: "4px 10px",
-                  borderRadius: "4px",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.1em",
-                }}
-              >
-                Elite Tier
-              </span>
-            </div>
+<div
+  className="match-lock-wrapper-mobile"
+  style={{
+    backgroundColor: "#111111",
+    border: "1px solid #222222",
+    borderRadius: "12px",
+    padding: "24px",
+    marginBottom: "16px",
+  }}
+>
+  {/* The neon green bordered container wrapping the prediction form */}
+  <div
+    style={{
+      border: "2px solid #00FF87",
+      borderRadius: "12px",
+      padding: "20px",
+      marginBottom: "16px",
+      boxShadow: "0 0 20px rgba(0, 255, 135, 0.15)",
+    }}
+  >
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: "20px",
+      }}
+    >
+      <p
+        style={{
+          color: "#FFFFFF",
+          fontSize: "14px",
+          fontWeight: "600",
+          textTransform: "uppercase",
+          letterSpacing: "0.1em",
+        }}
+      >
+        Lock Prediction
+      </p>
+      <span
+        style={{
+          backgroundColor: "rgba(0,255,135,0.1)",
+          color: "#00FF87",
+          fontSize: "11px",
+          fontWeight: "700",
+          padding: "4px 10px",
+          borderRadius: "4px",
+          textTransform: "uppercase",
+          letterSpacing: "0.1em",
+        }}
+      >
+        Elite Tier
+      </span>
+    </div>
 
-            <ScorePicker
-              homeTeam={match.homeTeam}
-              awayTeam={match.awayTeam}
-              homeScore={homeScore}
-              awayScore={awayScore}
-              onHomeScoreChange={setHomeScore}
-              onAwayScoreChange={setAwayScore}
-            />
+    <ScorePicker
+      homeTeam={match.homeTeam}
+      awayTeam={match.awayTeam}
+      homeScore={homeScore}
+      awayScore={awayScore}
+      onHomeScoreChange={setHomeScore}
+      onAwayScoreChange={setAwayScore}
+    />
 
-            <div
-              style={{
-                backgroundColor: "#1A1A1A",
-                borderRadius: "8px",
-                padding: "16px",
-                marginTop: "16px",
-                marginBottom: "16px",
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                <span style={{ color: "#666666", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                  Est. Payout
-                </span>
-                <span style={{ color: "#00FF87", fontSize: "16px", fontWeight: "700", fontFamily: "Barlow Condensed, sans-serif" }}>
-                  {estimatedPayout.toLocaleString()} TOKENS
-                </span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "#666666", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                  Confidence Score
-                </span>
-                <span
-                  style={{
-                    color: confidence >= 75 ? "#00FF87" : confidence >= 60 ? "#FF8C00" : "#FF3B3B",
-                    fontSize: "16px",
-                    fontWeight: "700",
-                    fontFamily: "Barlow Condensed, sans-serif",
-                  }}
-                >
-                  {confidence} / 100
-                </span>
-              </div>
-            </div>
+    <div
+      style={{
+        backgroundColor: "#1A1A1A",
+        borderRadius: "8px",
+        padding: "16px",
+        marginTop: "16px",
+        marginBottom: "16px",
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+        <span style={{ color: "#666666", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+          Est. Payout
+        </span>
+        <span style={{ color: "#00FF87", fontSize: "16px", fontWeight: "700", fontFamily: "Barlow Condensed, sans-serif" }}>
+          {estimatedPayout.toLocaleString()} TOKENS
+        </span>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <span style={{ color: "#666666", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+          Confidence Score
+        </span>
+        <span
+          style={{
+            color: confidence >= 75 ? "#00FF87" : confidence >= 60 ? "#FF8C00" : "#FF3B3B",
+            fontSize: "16px",
+            fontWeight: "700",
+            fontFamily: "Barlow Condensed, sans-serif",
+          }}
+        >
+          {confidence} / 100
+        </span>
+      </div>
+    </div>
 
-            <p style={{ color: "#666666", fontSize: "12px", textAlign: "center", marginBottom: "16px" }}>
-              Entry fee: {match.entryFee} TKNS will be deducted
-            </p>
+    <p style={{ color: "#666666", fontSize: "12px", textAlign: "center" }}>
+      Entry fee: {match.entryFee} TKNS will be deducted
+    </p>
+  </div>
 
-            <button
-              onClick={handleLockPrediction}
-              disabled={isLocking}
-              style={{
-                width: "100%",
-                backgroundColor: isLocking ? "#00CC6A" : "#00FF87",
-                color: "#0A0A0A",
-                fontWeight: "700",
-                fontSize: "16px",
-                padding: "16px",
-                borderRadius: "8px",
-                border: "none",
-                cursor: isLocking ? "not-allowed" : "pointer",
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
-                fontFamily: "Barlow Condensed, sans-serif",
-                transition: "all 0.2s",
-              }}
-            >
-              {isLocking ? "LOCKING..." : "LOCK SCORE"}
-            </button>
-          </div>
-
+  {/* Lock Score button OUTSIDE the bordered container */}
+  <button
+    onClick={handleLockPrediction}
+    disabled={isLocking}
+    style={{
+      width: "100%",
+      backgroundColor: isLocking ? "#00CC6A" : "#00FF87",
+      color: "#0A0A0A",
+      fontWeight: "700",
+      fontSize: "16px",
+      padding: "16px",
+      borderRadius: "8px",
+      border: "none",
+      cursor: isLocking ? "not-allowed" : "pointer",
+      textTransform: "uppercase",
+      letterSpacing: "0.1em",
+      fontFamily: "Barlow Condensed, sans-serif",
+      transition: "all 0.2s",
+    }}
+  >
+    {isLocking ? "LOCKING..." : "LOCK SCORE"}
+  </button>
+</div>
           {/* Global sentiment card */}
           <div
             className="match-sentiment-card"
