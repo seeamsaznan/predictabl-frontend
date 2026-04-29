@@ -10,11 +10,22 @@ export type MatchStatus = "open" | "closing" | "live" | "ended";
 
 // The top-level sport categories shown in the dropdown.
 // Each sport has multiple leagues nested inside it.
+//
+// Cricket is split into three formats because each has wildly different
+// score ranges:
+//   - T20: 20 overs per side, total ~350 runs
+//   - ODI: 50 overs per side, total ~600 runs
+//   - Test: 5 days, two innings per side, total ~1500+ runs
+// The distribution algorithm uses a different "winner threshold" for
+// each format because what counts as a "close" prediction is totally
+// different in T20 vs Test cricket.
 export type Sport =
   | "Basketball"
   | "Football"
   | "Soccer"
-  | "Cricket"
+  | "Cricket_T20"
+  | "Cricket_ODI"
+  | "Cricket_Test"
   | "Hockey"
   | "MMA"
   | "Baseball";
@@ -34,14 +45,25 @@ export const leaguesBySport: Record<Sport, string[]> = {
     "Serie A",
     "MLS",
   ],
-  Cricket: [
+  Cricket_T20: [
     "All",
     "IPL",
     "International T20",
-    "ODI",
     "PSL",
     "BPL",
     "Big Bash",
+  ],
+  Cricket_ODI: [
+    "All",
+    "ICC Cricket World Cup",
+    "ICC Champions Trophy",
+    "International ODI",
+  ],
+  Cricket_Test: [
+    "All",
+    "ICC World Test Championship",
+    "The Ashes",
+    "Border-Gavaskar Trophy",
   ],
   Hockey: ["All", "NHL"],
   MMA: ["All", "UFC", "Bellator"],
@@ -246,10 +268,10 @@ export const matches: Match[] = [
     awaySentiment: 52,
   },
 
-  // Cricket
+  // Cricket T20 - IPL, BPL, PSL, International T20 are all T20 leagues
   {
     id: "match-010",
-    sport: "Cricket",
+    sport: "Cricket_T20",
     league: "IPL",
     homeTeam: "Mumbai Indians",
     awayTeam: "Chennai Super Kings",
@@ -267,7 +289,7 @@ export const matches: Match[] = [
   },
   {
     id: "match-011",
-    sport: "Cricket",
+    sport: "Cricket_T20",
     league: "BPL",
     homeTeam: "Dhaka Dominators",
     awayTeam: "Rangpur Riders",
@@ -285,7 +307,7 @@ export const matches: Match[] = [
   },
   {
     id: "match-012",
-    sport: "Cricket",
+    sport: "Cricket_T20",
     league: "PSL",
     homeTeam: "Karachi Kings",
     awayTeam: "Lahore Qalandars",
@@ -303,7 +325,7 @@ export const matches: Match[] = [
   },
   {
     id: "match-013",
-    sport: "Cricket",
+    sport: "Cricket_T20",
     league: "International T20",
     homeTeam: "India",
     awayTeam: "Australia",

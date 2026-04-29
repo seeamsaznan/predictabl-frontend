@@ -6,6 +6,13 @@
 // 3. League chips -- dynamically show leagues for the selected sport
 // 4. Status tabs -- All / Open / Closing / Live / Ended
 // 5. Match grid
+//
+// CRICKET HANDLING:
+// Cricket has three formats internally (Cricket_T20, Cricket_ODI, Cricket_Test)
+// because each format needs a different distribution threshold. But the user
+// dropdown shows just "Cricket" as one option -- selecting it filters to all
+// three formats. This pattern is called "virtual filter values": the dropdown
+// has filter ids that map to one or more real sport values.
 
 "use client";
 
@@ -14,18 +21,62 @@ import { matches, Sport, leaguesBySport } from "@/lib/mockData";
 import MatchCard from "@/components/matches/MatchCard";
 import { Search, ChevronDown } from "lucide-react";
 
-// The top level sports shown in the dropdown.
-// "All Games" is a special value meaning no sport filter.
-type SportFilter = "All Games" | Sport;
-const sportOptions: SportFilter[] = [
-  "All Games",
-  "Basketball",
-  "Football",
-  "Soccer",
-  "Cricket",
-  "Hockey",
-  "MMA",
-  "Baseball",
+// A sport filter option in the dropdown.
+// id -- the internal identifier we store in state and use for filtering
+// label -- the user-facing text shown in the dropdown
+// matchesSport -- given a match's sport, returns true if it should appear
+//                 when this filter is active
+type SportFilterOption = {
+  id: string;
+  label: string;
+  matchesSport: (sport: Sport) => boolean;
+};
+
+// The dropdown options.
+// "All Games" matches everything. "Cricket" matches all three cricket formats.
+// Every other option matches its exact sport.
+const sportOptions: SportFilterOption[] = [
+  {
+    id: "All Games",
+    label: "All Games",
+    matchesSport: () => true,
+  },
+  {
+    id: "Basketball",
+    label: "Basketball",
+    matchesSport: (s) => s === "Basketball",
+  },
+  {
+    id: "Football",
+    label: "Football",
+    matchesSport: (s) => s === "Football",
+  },
+  {
+    id: "Soccer",
+    label: "Soccer",
+    matchesSport: (s) => s === "Soccer",
+  },
+  {
+    id: "Cricket",
+    label: "Cricket",
+    matchesSport: (s) =>
+      s === "Cricket_T20" || s === "Cricket_ODI" || s === "Cricket_Test",
+  },
+  {
+    id: "Hockey",
+    label: "Hockey",
+    matchesSport: (s) => s === "Hockey",
+  },
+  {
+    id: "MMA",
+    label: "MMA",
+    matchesSport: (s) => s === "MMA",
+  },
+  {
+    id: "Baseball",
+    label: "Baseball",
+    matchesSport: (s) => s === "Baseball",
+  },
 ];
 
 // The status tabs shown below the league chips
@@ -38,9 +89,33 @@ const statusFilters: { label: string; value: StatusFilter }[] = [
   { label: "Ended", value: "ended" },
 ];
 
+// Helper: given the selected sport filter id, return the union of all leagues
+// from the underlying real sports it covers. For "Cricket" this combines the
+// league lists from Cricket_T20, Cricket_ODI, and Cricket_Test into one
+// deduplicated list with "All" at the front.
+function getLeaguesForFilter(filterId: string): string[] {
+  if (filterId === "All Games") return [];
+
+  // Special case: "Cricket" combines all three format league lists.
+  if (filterId === "Cricket") {
+    const combined = new Set<string>();
+    combined.add("All");
+    const formats: Sport[] = ["Cricket_T20", "Cricket_ODI", "Cricket_Test"];
+    for (const format of formats) {
+      for (const league of leaguesBySport[format]) {
+        if (league !== "All") combined.add(league);
+      }
+    }
+    return Array.from(combined);
+  }
+
+  // Standard case: filter id is a real Sport, look it up directly.
+  return leaguesBySport[filterId as Sport] ?? [];
+}
+
 export default function MatchesPage() {
-  // Which sport is selected in the dropdown
-  const [selectedSport, setSelectedSport] = useState<SportFilter>("All Games");
+  // Which sport filter is selected in the dropdown (stored as filter id, not Sport)
+  const [selectedSportId, setSelectedSportId] = useState<string>("All Games");
 
   // Which league chip is selected (always "All" when sport changes)
   const [selectedLeague, setSelectedLeague] = useState<string>("All");
@@ -68,23 +143,24 @@ export default function MatchesPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Get the leagues for the currently selected sport.
-  // If "All Games" is selected, there are no league chips to show.
-  const availableLeagues =
-    selectedSport === "All Games" ? [] : leaguesBySport[selectedSport];
+  // Find the currently active filter option (used by the filter callback)
+  const activeOption =
+    sportOptions.find((o) => o.id === selectedSportId) ?? sportOptions[0];
+
+  // Get the leagues to show as chips for the currently selected sport.
+  const availableLeagues = getLeaguesForFilter(selectedSportId);
 
   // When user picks a different sport, reset the league to "All"
-  function handleSportChange(sport: SportFilter) {
-    setSelectedSport(sport);
+  function handleSportChange(filterId: string) {
+    setSelectedSportId(filterId);
     setSelectedLeague("All");
     setDropdownOpen(false);
   }
 
   // Filter matches based on all active filters
   const filteredMatches = matches.filter((match) => {
-    // Sport filter -- skip if "All Games"
-    const sportMatch =
-      selectedSport === "All Games" || match.sport === selectedSport;
+    // Sport filter -- use the active option's matchesSport function
+    const sportMatch = activeOption.matchesSport(match.sport);
 
     // League filter -- skip if "All"
     const leagueMatch =
@@ -156,15 +232,15 @@ export default function MatchesPage() {
       </div>
 
       {/* Sport dropdown */}
-        <div
-      ref={dropdownRef}
-      style={{
-        position: "relative",
-        marginBottom: "16px",
-        width: "100%",
-        maxWidth: "280px",
-      }}
-    >
+      <div
+        ref={dropdownRef}
+        style={{
+          position: "relative",
+          marginBottom: "16px",
+          width: "100%",
+          maxWidth: "280px",
+        }}
+      >
         {/* Dropdown trigger button */}
         <button
           onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -195,7 +271,7 @@ export default function MatchesPage() {
                 borderRadius: "50%",
               }}
             />
-            {selectedSport}
+            {activeOption.label}
           </span>
           <ChevronDown
             size={16}
@@ -223,12 +299,12 @@ export default function MatchesPage() {
               boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
             }}
           >
-            {sportOptions.map((sport) => {
-              const isActive = selectedSport === sport;
+            {sportOptions.map((option) => {
+              const isActive = selectedSportId === option.id;
               return (
                 <button
-                  key={sport}
-                  onClick={() => handleSportChange(sport)}
+                  key={option.id}
+                  onClick={() => handleSportChange(option.id)}
                   style={{
                     width: "100%",
                     backgroundColor: isActive ? "rgba(0,255,135,0.1)" : "transparent",
@@ -246,7 +322,7 @@ export default function MatchesPage() {
                     transition: "all 0.15s",
                   }}
                 >
-                  {sport}
+                  {option.label}
                 </button>
               );
             })}
