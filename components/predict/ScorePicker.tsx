@@ -7,35 +7,52 @@
 // This pattern is called "controlled component" -- the component
 // displays values it receives and reports changes upward rather
 // than managing the values itself.
+//
+// The step and max props let the parent customize behavior per sport:
+//   - Soccer match: step=1, max=10 (small numbers, fine adjustments)
+//   - Test cricket match: step=5, max=800 (big numbers, coarser steps)
 
 type ScorePickerProps = {
-  // The name of the home team
   homeTeam: string;
-  // The name of the away team
   awayTeam: string;
-  // The current predicted score for each team
   homeScore: number;
   awayScore: number;
-  // Callback functions called when the user clicks + or -
-  // The parent page updates its state when these are called
   onHomeScoreChange: (score: number) => void;
   onAwayScoreChange: (score: number) => void;
+  // How much each + or - click changes the score. Defaults to 1 for backward
+  // compatibility, but should be passed explicitly for sports where bigger
+  // increments make sense (e.g. cricket Test).
+  step?: number;
+  // Upper bound on the score. Prevents absurd values. Defaults to a generous
+  // value if not provided.
+  max?: number;
+  // Lower bound on the score. Defaults to 0 -- you cannot score negative.
+  min?: number;
 };
 
-// A single score row showing team name, minus button, score, plus button
 function ScoreRow({
   teamName,
   score,
   color,
+  step,
+  min,
+  max,
   onIncrement,
   onDecrement,
 }: {
   teamName: string;
   score: number;
   color: string;
+  step: number;
+  min: number;
+  max: number;
   onIncrement: () => void;
   onDecrement: () => void;
 }) {
+  // Determine if the buttons should be disabled at the current value.
+  const canDecrement = score - step >= min;
+  const canIncrement = score + step <= max;
+
   return (
     <div
       style={{
@@ -74,19 +91,19 @@ function ScoreRow({
 
       {/* Score controls -- minus, score value, plus */}
       <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-        {/* Minus button -- prevents score going below 0 */}
+        {/* Minus button */}
         <button
           onClick={onDecrement}
-          disabled={score <= 0}
+          disabled={!canDecrement}
           style={{
             width: "32px",
             height: "32px",
             borderRadius: "50%",
             backgroundColor: "#222222",
             border: "1px solid #333333",
-            color: score <= 0 ? "#444444" : "#AAAAAA",
+            color: !canDecrement ? "#444444" : "#AAAAAA",
             fontSize: "18px",
-            cursor: score <= 0 ? "not-allowed" : "pointer",
+            cursor: !canDecrement ? "not-allowed" : "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -115,15 +132,16 @@ function ScoreRow({
         {/* Plus button */}
         <button
           onClick={onIncrement}
+          disabled={!canIncrement}
           style={{
             width: "32px",
             height: "32px",
             borderRadius: "50%",
             backgroundColor: "#222222",
             border: "1px solid #333333",
-            color: "#AAAAAA",
+            color: !canIncrement ? "#444444" : "#AAAAAA",
             fontSize: "18px",
-            cursor: "pointer",
+            cursor: !canIncrement ? "not-allowed" : "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -145,6 +163,9 @@ export default function ScorePicker({
   awayScore,
   onHomeScoreChange,
   onAwayScoreChange,
+  step = 1,
+  max = 999,
+  min = 0,
 }: ScorePickerProps) {
   return (
     <div>
@@ -153,8 +174,11 @@ export default function ScorePicker({
         teamName={homeTeam}
         score={homeScore}
         color="#FFFFFF"
-        onIncrement={() => onHomeScoreChange(homeScore + 1)}
-        onDecrement={() => onHomeScoreChange(Math.max(0, homeScore - 1))}
+        step={step}
+        min={min}
+        max={max}
+        onIncrement={() => onHomeScoreChange(Math.min(max, homeScore + step))}
+        onDecrement={() => onHomeScoreChange(Math.max(min, homeScore - step))}
       />
 
       {/* Away team score row -- green dot */}
@@ -162,8 +186,11 @@ export default function ScorePicker({
         teamName={awayTeam}
         score={awayScore}
         color="#00FF87"
-        onIncrement={() => onAwayScoreChange(awayScore + 1)}
-        onDecrement={() => onAwayScoreChange(Math.max(0, awayScore - 1))}
+        step={step}
+        min={min}
+        max={max}
+        onIncrement={() => onAwayScoreChange(Math.min(max, awayScore + step))}
+        onDecrement={() => onAwayScoreChange(Math.max(min, awayScore - step))}
       />
     </div>
   );

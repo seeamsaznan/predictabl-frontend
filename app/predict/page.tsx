@@ -11,18 +11,47 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { getMatchById } from "@/lib/mockData";
+import { getMatchById, type Sport } from "@/lib/mockData";
+import { getScoreDefaults } from "@/lib/scoreDefaults";
 import ScorePicker from "@/components/predict/ScorePicker";
 import Link from "next/link";
 import { Suspense } from "react";
+
+// Returns the appropriate emoji for a given sport.
+// Used to show the correct icon in the match header instead of a
+// hardcoded basketball.
+function getSportEmoji(sport: Sport): string {
+  switch (sport) {
+    case "Basketball":    return "🏀";
+    case "Football":      return "🏈";
+    case "Soccer":        return "⚽";
+    case "Cricket_T20":   return "🏏";
+    case "Cricket_ODI":   return "🏏";
+    case "Cricket_Test":  return "🏏";
+    case "Hockey":        return "🏒";
+    case "MMA":           return "🥊";
+    case "Baseball":      return "⚾";
+    default:              return "🏆";
+  }
+}
 
 function PredictContent() {
   const searchParams = useSearchParams();
   const matchId = searchParams.get("match") || "match-001";
   const match = getMatchById(matchId);
 
-  const [homeScore, setHomeScore] = useState(108);
-  const [awayScore, setAwayScore] = useState(104);
+  // Get sport-aware defaults for the score picker.
+  // We compute these once based on the match's sport. If the match is
+  // not found, we fall back to safe values that will not crash the page.
+  const defaults = match
+    ? getScoreDefaults(match.sport)
+    : { defaultHome: 0, defaultAway: 0, step: 1, max: 999, min: 0 };
+
+  // useState's initializer pattern: pass a function so the value is computed
+  // once on first render rather than every render. This matters when the
+  // initial value comes from a lookup or computation.
+  const [homeScore, setHomeScore] = useState(() => defaults.defaultHome);
+  const [awayScore, setAwayScore] = useState(() => defaults.defaultAway);
   const [showModal, setShowModal] = useState(false);
   const [isLocking, setIsLocking] = useState(false);
 
@@ -68,6 +97,7 @@ function PredictContent() {
 
   const confidence = calculateConfidence();
   const estimatedPayout = calculatePayout();
+  const sportEmoji = getSportEmoji(match.sport);
 
   return (
     <div>
@@ -205,7 +235,7 @@ function PredictContent() {
                     border: "1px solid #333333",
                   }}
                 >
-                  <span style={{ fontSize: "24px" }}>🏀</span>
+                  <span style={{ fontSize: "24px" }}>{sportEmoji}</span>
                 </div>
                 <p
                   className="match-header-title"
@@ -257,7 +287,7 @@ function PredictContent() {
                     margin: "0 auto 12px",
                   }}
                 >
-                  <span style={{ fontSize: "24px" }}>🏀</span>
+                  <span style={{ fontSize: "24px" }}>{sportEmoji}</span>
                 </div>
                 <p
                   className="match-header-title"
@@ -310,132 +340,134 @@ function PredictContent() {
           </div>
 
           {/* MOBILE ONLY -- Lock Prediction */}
-<div
-  className="match-lock-wrapper-mobile"
-  style={{
-    backgroundColor: "#111111",
-    border: "1px solid #222222",
-    borderRadius: "12px",
-    padding: "24px",
-    marginBottom: "16px",
-  }}
->
-  {/* The neon green bordered container wrapping the prediction form */}
-  <div
-    style={{
-      border: "2px solid #00FF87",
-      borderRadius: "12px",
-      padding: "20px",
-      marginBottom: "16px",
-      boxShadow: "0 0 20px rgba(0, 255, 135, 0.15)",
-    }}
-  >
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginBottom: "20px",
-      }}
-    >
-      <p
-        style={{
-          color: "#FFFFFF",
-          fontSize: "14px",
-          fontWeight: "600",
-          textTransform: "uppercase",
-          letterSpacing: "0.1em",
-        }}
-      >
-        Lock Prediction
-      </p>
-      <span
-        style={{
-          backgroundColor: "rgba(0,255,135,0.1)",
-          color: "#00FF87",
-          fontSize: "11px",
-          fontWeight: "700",
-          padding: "4px 10px",
-          borderRadius: "4px",
-          textTransform: "uppercase",
-          letterSpacing: "0.1em",
-        }}
-      >
-        Elite Tier
-      </span>
-    </div>
+          <div
+            className="match-lock-wrapper-mobile"
+            style={{
+              backgroundColor: "#111111",
+              border: "1px solid #222222",
+              borderRadius: "12px",
+              padding: "24px",
+              marginBottom: "16px",
+            }}
+          >
+            <div
+              style={{
+                border: "2px solid #00FF87",
+                borderRadius: "12px",
+                padding: "20px",
+                marginBottom: "16px",
+                boxShadow: "0 0 20px rgba(0, 255, 135, 0.15)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: "20px",
+                }}
+              >
+                <p
+                  style={{
+                    color: "#FFFFFF",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                  }}
+                >
+                  Lock Prediction
+                </p>
+                <span
+                  style={{
+                    backgroundColor: "rgba(0,255,135,0.1)",
+                    color: "#00FF87",
+                    fontSize: "11px",
+                    fontWeight: "700",
+                    padding: "4px 10px",
+                    borderRadius: "4px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                  }}
+                >
+                  Elite Tier
+                </span>
+              </div>
 
-    <ScorePicker
-      homeTeam={match.homeTeam}
-      awayTeam={match.awayTeam}
-      homeScore={homeScore}
-      awayScore={awayScore}
-      onHomeScoreChange={setHomeScore}
-      onAwayScoreChange={setAwayScore}
-    />
+              <ScorePicker
+                homeTeam={match.homeTeam}
+                awayTeam={match.awayTeam}
+                homeScore={homeScore}
+                awayScore={awayScore}
+                onHomeScoreChange={setHomeScore}
+                onAwayScoreChange={setAwayScore}
+                step={defaults.step}
+                max={defaults.max}
+                min={defaults.min}
+              />
 
-    <div
-      style={{
-        backgroundColor: "#1A1A1A",
-        borderRadius: "8px",
-        padding: "16px",
-        marginTop: "16px",
-        marginBottom: "16px",
-      }}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-        <span style={{ color: "#666666", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-          Est. Payout
-        </span>
-        <span style={{ color: "#00FF87", fontSize: "16px", fontWeight: "700", fontFamily: "Barlow Condensed, sans-serif" }}>
-          {estimatedPayout.toLocaleString()} TOKENS
-        </span>
-      </div>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <span style={{ color: "#666666", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-          Confidence Score
-        </span>
-        <span
-          style={{
-            color: confidence >= 75 ? "#00FF87" : confidence >= 60 ? "#FF8C00" : "#FF3B3B",
-            fontSize: "16px",
-            fontWeight: "700",
-            fontFamily: "Barlow Condensed, sans-serif",
-          }}
-        >
-          {confidence} / 100
-        </span>
-      </div>
-    </div>
+              <div
+                style={{
+                  backgroundColor: "#1A1A1A",
+                  borderRadius: "8px",
+                  padding: "16px",
+                  marginTop: "16px",
+                  marginBottom: "16px",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                  <span style={{ color: "#666666", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                    Est. Payout
+                  </span>
+                  <span style={{ color: "#00FF87", fontSize: "16px", fontWeight: "700", fontFamily: "Barlow Condensed, sans-serif" }}>
+                    {estimatedPayout.toLocaleString()} TOKENS
+                  </span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ color: "#666666", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                    Confidence Score
+                  </span>
+                  <span
+                    style={{
+                      color: confidence >= 75 ? "#00FF87" : confidence >= 60 ? "#FF8C00" : "#FF3B3B",
+                      fontSize: "16px",
+                      fontWeight: "700",
+                      fontFamily: "Barlow Condensed, sans-serif",
+                    }}
+                  >
+                    {confidence} / 100
+                  </span>
+                </div>
+              </div>
 
-    <p style={{ color: "#666666", fontSize: "12px", textAlign: "center" }}>
-      Entry fee: {match.entryFee} TKNS will be deducted
-    </p>
-  </div>
+              <p style={{ color: "#666666", fontSize: "12px", textAlign: "center" }}>
+                Entry fee: {match.entryFee} TKNS will be deducted
+              </p>
+            </div>
 
-  {/* Lock Score button OUTSIDE the bordered container */}
-  <button
-    onClick={handleLockPrediction}
-    disabled={isLocking}
-    style={{
-      width: "100%",
-      backgroundColor: isLocking ? "#00CC6A" : "#00FF87",
-      color: "#0A0A0A",
-      fontWeight: "700",
-      fontSize: "16px",
-      padding: "16px",
-      borderRadius: "8px",
-      border: "none",
-      cursor: isLocking ? "not-allowed" : "pointer",
-      textTransform: "uppercase",
-      letterSpacing: "0.1em",
-      fontFamily: "Barlow Condensed, sans-serif",
-      transition: "all 0.2s",
-    }}
-  >
-    {isLocking ? "LOCKING..." : "LOCK SCORE"}
-  </button>
-</div>
+            <button
+              onClick={handleLockPrediction}
+              disabled={isLocking}
+              style={{
+                width: "100%",
+                backgroundColor: isLocking ? "#00CC6A" : "#00FF87",
+                color: "#0A0A0A",
+                fontWeight: "700",
+                fontSize: "16px",
+                padding: "16px",
+                borderRadius: "8px",
+                border: "none",
+                cursor: isLocking ? "not-allowed" : "pointer",
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                fontFamily: "Barlow Condensed, sans-serif",
+                transition: "all 0.2s",
+              }}
+            >
+              {isLocking ? "LOCKING..." : "LOCK SCORE"}
+            </button>
+          </div>
+
           {/* Global sentiment card */}
           <div
             className="match-sentiment-card"
@@ -579,6 +611,9 @@ function PredictContent() {
               awayScore={awayScore}
               onHomeScoreChange={setHomeScore}
               onAwayScoreChange={setAwayScore}
+              step={defaults.step}
+              max={defaults.max}
+              min={defaults.min}
             />
 
             <div
